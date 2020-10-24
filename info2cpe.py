@@ -158,6 +158,36 @@ def main(args):
         print("   | Probability: %s%%" % prob)
         print("   |____")
         print()
+    
+    if not results:
+        print("   |----")   
+        print("   | No results")
+        print("   | Starting advanced search")
+        print("   |____")
+        print()
+        start_time = time.time()
+        results = search_cpe(in_text + " -", cpe_db, max_rerults)
+        stop_time = time.time()
+
+        # Display results
+        print("[*] Analysis time of advanced search: %s" % (stop_time - start_time))
+        print("[*] Results:\n")
+
+        for prob, cpe, name in results:
+
+            print("   |----")
+            print("   | CPE: %s" % cpe)
+            print("   | Name: %s" % name)
+            print("   | Probability: %s%%" % prob)
+            print("   |____")
+            print()
+
+        if not results:
+            print("   |----")   
+            print("   | No results in advanced search")
+            print("   |____")
+            print()
+
 
 
 if __name__ == '__main__':
