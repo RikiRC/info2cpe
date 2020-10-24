@@ -36,14 +36,15 @@ def update_db():
     """
     This function download, parse and update cpe.db.
     """
-    from urllib2 import urlopen, HTTPError, URLError
+    from urllib.request import urlopen
+    from urllib.error import HTTPError, URLError
     try:
         from xml.etree import cElementTree as ET
     except ImportError:
         from xml.etree import ElementTree as ET
 
     try:
-        from cPickle import dump, PickleError
+        from pickle import dump, PickleError
     except ImportError:
         from pickle import dump, PickleError
 
@@ -55,17 +56,17 @@ def update_db():
     # Download the file
     #
     try:
-        print "[*] Downloading CPE database (this can take some time)."
+        print("[*] Downloading CPE database (this can take some time).")
         d = urlopen(cpe_xml_url)
 
-        with open(cpe_filename, "w") as f:
+        with open(cpe_filename, "wb") as f:
             f.write(d.read())
 
-    except HTTPError, e:
-        print "[!] Can't download CPE dictionary: Error: %s" % e.message
+    except HTTPError as e:
+        print("[!] Can't download CPE dictionary: Error: %s" % e.message)
         exit(1)
-    except URLError, e:
-        print "[!] Can't download CPE dictionary: Error: %s" % e.message
+    except URLError as e:
+        print("[!] Can't download CPE dictionary: Error: %s" % e.message)
         exit(1)
 
     #
@@ -74,26 +75,26 @@ def update_db():
     cpe_info = {}
 
     try:
-        print "[*] Loading XML CPE file."
+        print("[*] Loading XML CPE file.")
         root = ET.parse(cpe_filename).getroot()
-    except ET.ParseError, e:
-        print "[!] Error while parsing CPE dictionary: Error: %s" % e.message
+    except ET.ParseError as e:
+        print("[!] Error while parsing CPE dictionary: Error: %s" % e.message)
         exit(1)
 
     # Start at 1 because first element is 'generator' tag, and is not valid for us
-    print "[*] Converting XML to CPE database."
+    print("[*] Converting XML to CPE database.")
     for item in root.getchildren()[1:]:
         cpe_info[item.attrib["name"]] = item.getchildren()[0].text
 
     # Serialize
     try:
-        print "[*] Saving CPE database in '%s' file." % cpe_db_filename
+        print("[*] Saving CPE database in '%s' file." % cpe_db_filename)
         dump(cpe_info, open(cpe_db_filename, "wb"), protocol=2)
-    except PickleError, e:
-        print "[!] Error while saving CPE database: Error: %s" % e.message
+    except PickleError as e:
+        print("[!] Error while saving CPE database: Error: %s" % e.message)
         exit(1)
 
-    print "[*] Done!"
+    print("[*] Done!")
 
 
 #----------------------------------------------------------------------
@@ -114,14 +115,14 @@ def main(args):
     #
     max_rerults = args.MAX_RESULTS
     if max_rerults < 0:
-        print "[!] --max-results must be greather than 0."
+        print("[!] --max-results must be greather than 0.")
         exit(1)
 
     # Input text
     in_text = args.INPUT_TEXT
 
     if in_text is None:
-        print "[!] --text option is required."
+        print("[!] --text option is required.")
         exit(1)
 
 
@@ -130,33 +131,33 @@ def main(args):
     if args.CPE_FILE:
         cpe_db = args.CPE_FILE
     if not os.path.exists(cpe_db):
-        print "\n[!] CPE database '%s' not exits." % cpe_db
+        print("\n[!] CPE database '%s' not exits." % cpe_db)
         exit(0)
     if os.path.isdir(cpe_db):
-        print "\n[!] CPE database '%s' is not a regular file." % cpe_db
+        print("\n[!] CPE database '%s' is not a regular file." % cpe_db)
         exit(0)
 
     #
     # Call
     #
-    print "[*] Starting analysis..."
+    print("[*] Starting analysis...")
 
     start_time = time.time()
     results = search_cpe(in_text, cpe_db, max_rerults)
     stop_time = time.time()
 
     # Display results
-    print "[*] Analysis time: %s" % (stop_time - start_time)
-    print "[*] Results:\n"
+    print("[*] Analysis time: %s" % (stop_time - start_time))
+    print("[*] Results:\n")
 
     for prob, cpe, name in results:
 
-        print "   |----"
-        print "   | CPE: %s" % cpe
-        print "   | Name: %s" % name
-        print "   | Probability: %s%%" % prob
-        print "   |____"
-        print
+        print("   |----")
+        print("   | CPE: %s" % cpe)
+        print("   | Name: %s" % name)
+        print("   | Probability: %s%%" % prob)
+        print("   |____")
+        print()
 
 
 if __name__ == '__main__':

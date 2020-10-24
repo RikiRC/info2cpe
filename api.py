@@ -25,7 +25,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import re
 
 try:
-    from cPickle import load, PickleError
+    from pickle import load, PickleError
 except ImportError:
     from pickle import load, PickleError
 
@@ -100,7 +100,7 @@ def search_cpe(search_term, cpe_db="cpe.db", results_number=1):
 
     try:
         list_items = load(open(cpe_db, "rb"))
-    except PickleError, e:
+    except PickleError as e:
         raise ValueError("Error while loading CPE database. Error: %s." % e.message)
 
     terms = fsplit(search_term)
@@ -122,7 +122,7 @@ def search_cpe(search_term, cpe_db="cpe.db", results_number=1):
     # First filter
     partial_results1 = []
     partial_results1_append = partial_results1.append
-    for k, x in list_items.iteritems():
+    for k, x in list_items.items():
         # Only unicode strings
         try:
             str(x)
@@ -148,7 +148,7 @@ def search_cpe(search_term, cpe_db="cpe.db", results_number=1):
     # x = CPE description (str)
     # is_acronym = Bool
     for k, x, is_acronym in partial_results1:
-        r = fuzz.partial_token_set_ratio(search_term, x, force_ascii=True)
+        r = fuzz.token_set_ratio(search_term, x, force_ascii=True)
 
         # Is false positive?
         if any(fil.search(x) is not None for fil in filters):
@@ -167,7 +167,7 @@ def search_cpe(search_term, cpe_db="cpe.db", results_number=1):
 
     result = []
     # Transform and get only the first N elements
-    sorted_results = sorted(partial_results2.iteritems(), key=lambda (k, v): v, reverse=True)
+    sorted_results = sorted(iter(partial_results2.items()), key=lambda k_v: k_v[1], reverse=True)
     results_number = results_number if len(sorted_results) >= results_number else len(sorted_results)
     for x, y in sorted_results[:results_number]:  # By value
         result.append((y, x, list_items[x]))
